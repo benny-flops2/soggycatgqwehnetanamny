@@ -1,67 +1,287 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-	<title>toby</title>
-	<link rel="icon" href="favicon.ico">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Look-at-mouse image</title>
+<style>
+  :root{
+    --bg:#0f1724;
+    --card-bg:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    --shadow: 0 10px 30px rgba(2,6,23,0.6);
+    --size-min:220px;
+    --size-max:520px;
+  }
 
-	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-	<meta charset="UTF-8">
+  /* Basic reset */
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--bg);
+    color:#fff;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
 
-	<meta name="title" content="soggy cat">
-	<meta property="og:title" content="soggy cat">
+  /* Stage centers content and provides perspective for 3D transforms */
+  .stage{
+    width:min(92vw, 1100px);
+    height:min(82vh, 800px);
+    display:grid;
+    place-items:center;
+    perspective:1100px; /* stronger perspective = deeper 3D */
+    -webkit-perspective:1100px;
+    user-select:none;
+    touch-action:none; /* keeps pointer move for some browsers */
+  }
 
-	<meta name="description" content="a picture of a wet cat inside a bathtub.">
-	<meta property="og:description" content="a picture of a wet cat inside a bathtub.">
+  /* Card holds the image */
+  .card{
+    width:clamp(var(--size-min), 45vw, var(--size-max));
+    aspect-ratio: 3 / 4; /* tall image */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--card-bg);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    transition: box-shadow 240ms ease;
+    transform-style:preserve-3d;
+    will-change:transform;
+    padding:14px;
+  }
 
-	<meta property="og:image" content="/static/ssoggycat/main/soggycat.webp">
-	<meta name="color-scheme" content="light">
-	<meta name="theme-color" content="#ffcc5f">
+  .card:active { transition: none; } /* remove transition while dragging */
 
-	<link rel="stylesheet" href="/static/ssoggycat/shared/web/main.css">
-	<link rel="stylesheet" href="/static/ssoggycat/sidemenu/web/sidemenu.css">
+  /* The image itself - we apply transforms to this element */
+  .look-img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    border-radius:12px;
+    transform-origin:50% 50% 0;
+    transition: transform 300ms cubic-bezier(.15,.9,.25,1), filter 300ms;
+    will-change:transform, filter;
+    box-shadow: 0 6px 20px rgba(2,6,23,0.45), inset 0 -6px 18px rgba(0,0,0,0.08);
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+    cursor:default;
+    display:block;
+  }
+
+  /* subtle glare highlight */
+  .glare{
+    position:absolute;
+    inset:0;
+    border-radius:12px;
+    pointer-events:none;
+    background: radial-gradient(600px 300px at 20% 20%, rgba(255,255,255,0.12), transparent 12%);
+    mix-blend-mode: screen;
+    opacity:0;
+    transition:opacity 300ms;
+    transform: translateZ(60px) scale(1.05);
+    will-change:opacity, transform;
+  }
+
+  /* Container positions the image and glare */
+  .card-wrapper{
+    position:relative;
+    width:100%;
+    height:100%;
+  }
+
+  /* fallback & small screens */
+  @media (max-width:480px){
+    :root{ --size-max:420px; --size-min:180px; }
+    .card{ border-radius:12px; padding:8px; }
+    .look-img{ border-radius:10px; }
+  }
+
+  /* Respect users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    .look-img, .glare { transition: none !important; }
+  }
+
+  /* helpful caption (optional) */
+  .caption{
+    position:fixed;
+    bottom:18px;
+    left:50%;
+    transform:translateX(-50%);
+    color:rgba(255,255,255,0.6);
+    font-size:13px;
+    letter-spacing:0.2px;
+    user-select:none;
+  }
+</style>
 </head>
+<body>
+  <div class="stage" id="stage">
+    <div class="card" id="card" aria-hidden="false">
+      <div class="card-wrapper">
+        <!-- Replace the src below with your own image path or URL -->
+        <img class="look-img" id="lookImg"
+             src="https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=3f5f0d2bde9e9b9b8d3f2f1a1a9f1c1a"
+             alt="Centered image" width="800" height="1066" loading="lazy" />
+        <div class="glare" id="glare"></div>
+      </div>
+    </div>
+  </div>
 
-<body data-soggy-pagetype="vtilt-js">
-	<div class="gradient-background"></div>
-	<img id="soggycat" src="toby.png" width="1000" height="1333" alt="toby the cat" loading="eager" decoding="async" data-tilt data-tilt-scale="1.05">
+  <div class="caption">Move your mouse over the image</div>
 
-	<div id="sidemenu" class="sm sm-closed" inert>
-		<a aria-label="code" href="/github" target="GithubTarget">
-			<div class = "sm-button">
-				<img src="/static/other/sidemenu/svgs/code.svg" width="15" height="15" loading="lazy" decoding="async">
-				<p>code</p>
-			</div>
-		</a>
+<script>
+(function(){
+  const stage = document.getElementById('stage');
+  const card = document.getElementById('card');
+  const img = document.getElementById('lookImg');
+  const glare = document.getElementById('glare');
 
-		<a aria-label="no css" href="nocss" target="NoCSSTarget">
-			<div class="sm-button sm-small">
-				<img src="/static/other/sidemenu/svgs/nocss.svg" width="15" height="15" loading="lazy" decoding="async">
-				<p>no css</p>
-			</div>
-		</a>
+  // Config — tweak these to increase/decrease effect
+  const cfg = {
+    maxTilt: 12,        // degrees of rotation on X/Y
+    maxTranslate: 12,   // px translation to make the image 'look' toward pointer
+    glareMaxOpacity: 0.35,
+    ease: 0.12,         // lerp smoothing (0..1); lower = smoother
+  };
 
-		<a aria-label="upload" href="#" onclick="document.getElementById('picker').click(); return false;">
-			<div class="sm-button sm-small">
-				<img src="/static/other/sidemenu/svgs/upload.svg" width="15" height="15" loading="lazy" decoding="async">
-				<p>upload</p>
-			</div>
-		</a>
+  // State
+  let width = 0, height = 0, left = 0, top = 0;
+  let targetX = 0, targetY = 0;   // normalized [-1..1]
+  let currentX = 0, currentY = 0; // animated values
+  let rafId = null;
+  let pointerActive = false;
 
-		<div class="disappointment" style="display:none">
-			<img title='"i ate my goog cube dont tell anyone"
-	- @leon_jajko1 on twitter, 2025, to @ssoggycat'
-				class="sm-button" src="/static/ssoggycat/main/images/consume.webp" width="200" height="189" loading="lazy" decoding="async">
-		</div>
-	</div>
+  // Update geometry
+  function updateRect(){
+    const r = card.getBoundingClientRect();
+    width = r.width; height = r.height; left = r.left; top = r.top;
+  }
+  // Convert pointer event to normalized coords relative to center
+  function pointerToNorm(clientX, clientY){
+    const x = ((clientX - left) - width/2) / (width/2);   // -1..1
+    const y = ((clientY - top)  - height/2) / (height/2); // -1..1
+    return [ Math.max(-1, Math.min(1, x)), Math.max(-1, Math.min(1, y)) ];
+  }
 
-	<button id="circlebtn" type="button" aria-label="Navigation"></button>
-	<span id="player" style="display: none"></span>
-	<input type="file" id="picker" style="display: none" accept="image/*">
+  function onPointerMove(e){
+    if (e.touches && e.touches.length) {
+      e = e.touches[0];
+    }
+    const [nx, ny] = pointerToNorm(e.clientX, e.clientY);
+    // invert Y for intuitive tilt (pointer up -> rotateX negative)
+    targetX = ny;
+    targetY = nx;
+    pointerActive = true;
+    startRAF();
+  }
 
-	<script src="/static/other/shared/web/vanillatilt.js" defer></script>
-	<script src="/static/other/shared/web/color-thief.umd.js" defer></script>
+  function onPointerLeave(){
+    // reset targets
+    targetX = 0; targetY = 0;
+    pointerActive = false;
+  }
 
-	<script src="/static/ssoggycat/shared/web/main.js" defer></script>
-	<script src="/static/ssoggycat/sidemenu/web/sidemenu.js" defer></script>
+  // Smooth step interpolation (lerp)
+  function lerp(a, b, t){ return a + (b - a) * t; }
+
+  // Animation loop
+  function animate(){
+    currentX = lerp(currentX, targetX, cfg.ease);
+    currentY = lerp(currentY, targetY, cfg.ease);
+
+    // compute rotation angles (rotateX is for vertical movement)
+    const rotateX = currentX * cfg.maxTilt * -1; // invert to match depth
+    const rotateY = currentY * cfg.maxTilt;
+
+    // compute small translation so image "looks" towards the pointer
+    const transX = currentY * cfg.maxTranslate * -1;
+    const transY = currentX * cfg.maxTranslate * -1;
+
+    // apply transform: translateZ gives subtle pop
+    const transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translate3d(${transX}px, ${transY}px, 28px) scale(1.01)`;
+    img.style.transform = transform;
+
+    // Card tilt (less than image to create layered parallax)
+    const cardRx = currentX * (cfg.maxTilt * 0.45) * -1;
+    const cardRy = currentY * (cfg.maxTilt * 0.45);
+    card.style.transform = `translateZ(0) rotateX(${cardRx}deg) rotateY(${cardRy}deg)`;
+
+    // Glare: move its position relative to pointer and fade in/out
+    const glareX = (currentY * 50) + 50; // percent
+    const glareY = (currentX * -35) + 50;
+    glare.style.background = `radial-gradient(600px 300px at ${glareX}% ${glareY}%, rgba(255,255,255,0.14), transparent 12%)`;
+    const targetGlareOpacity = pointerActive ? cfg.glareMaxOpacity * Math.abs(currentX) : 0;
+    glare.style.opacity = String(lerp(parseFloat(glare.style.opacity || 0), targetGlareOpacity, cfg.ease));
+
+    // stop RAF when values are basically at rest
+    if (Math.abs(currentX - targetX) < 0.0005 && Math.abs(currentY - targetY) < 0.0005 && !pointerActive) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+      return;
+    }
+    rafId = requestAnimationFrame(animate);
+  }
+
+  function startRAF(){
+    if (!rafId) { rafId = requestAnimationFrame(animate); }
+  }
+
+  // Event listeners
+  // Use pointer events when available, fallback to mouse/touch
+  const supportsPointer = window.PointerEvent !== undefined;
+  if (supportsPointer){
+    card.addEventListener('pointermove', onPointerMove, {passive:true});
+    card.addEventListener('pointerleave', onPointerLeave);
+    card.addEventListener('pointerdown', (e)=>{ e.preventDefault(); }, {passive:false});
+  } else {
+    window.addEventListener('mousemove', onPointerMove, {passive:true});
+    card.addEventListener('mouseleave', onPointerLeave);
+    card.addEventListener('touchmove', onPointerMove, {passive:true});
+    card.addEventListener('touchend', onPointerLeave);
+  }
+
+  // Recompute rect on resize/scroll
+  window.addEventListener('resize', updateRect);
+  window.addEventListener('scroll', updateRect, true);
+  // initial compute
+  updateRect();
+
+  // If device is touch-first, disable heavy 3D and only do small translate on touch
+  function isTouchy(){
+    return (('ontouchstart' in window) || navigator.maxTouchPoints > 0);
+  }
+  if (isTouchy()){
+    // make effect smaller & disable perspective to avoid jank
+    cfg.maxTilt = 6;
+    cfg.maxTranslate = 8;
+    stage.style.perspective = '800px';
+  }
+
+  // accessibility: if user prefers reduced motion, remove listeners & keep image static
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    if (supportsPointer){
+      card.removeEventListener('pointermove', onPointerMove);
+      card.removeEventListener('pointerleave', onPointerLeave);
+    } else {
+      window.removeEventListener('mousemove', onPointerMove);
+      card.removeEventListener('mouseleave', onPointerLeave);
+      card.removeEventListener('touchmove', onPointerMove);
+      card.removeEventListener('touchend', onPointerLeave);
+    }
+    img.style.transform = 'none';
+    card.style.transform = 'none';
+    glare.style.display = 'none';
+  }
+
+  // allow pause/resume by clicking the card (optional nicety)
+  card.addEventListener('click', () => {
+    // quick pulse to indicate interactivity
+    card.animate([{boxShadow: '0 18px 40px rgba(2,6,23,0.75)'}, {boxShadow: 'var(--shadow)'}], {duration:260, easing:'ease-out'});
+  });
+})();
+</script>
 </body>
 </html>
