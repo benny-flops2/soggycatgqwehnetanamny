@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 	<title>toby</title>
+	<link rel="icon" href="favicon.ico">
 
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 	<meta charset="UTF-8">
@@ -22,7 +23,36 @@
 
 <body data-soggy-pagetype="vtilt-js">
 	<div class="gradient-background"></div>
-	<img id="soggycat" src="toby.png" width="1000" height="1333" alt="a picture of a wet cat inside a bathtub." loading="eager" decoding="async" data-tilt data-tilt-scale="1.05">
+	<img id="soggycat" src="toby.png" width="1000" height="1333" alt="toby the cat" loading="eager" decoding="async" data-tilt data-tilt-scale="1.05">
+
+	<div id="sidemenu" class="sm sm-closed" inert>
+		<a aria-label="code" href="/github" target="GithubTarget">
+			<div class = "sm-button">
+				<img src="/static/other/sidemenu/svgs/code.svg" width="15" height="15" loading="lazy" decoding="async">
+				<p>code</p>
+			</div>
+		</a>
+
+		<a aria-label="no css" href="nocss" target="NoCSSTarget">
+			<div class="sm-button sm-small">
+				<img src="/static/other/sidemenu/svgs/nocss.svg" width="15" height="15" loading="lazy" decoding="async">
+				<p>no css</p>
+			</div>
+		</a>
+
+		<a aria-label="upload" href="#" onclick="document.getElementById('picker').click(); return false;">
+			<div class="sm-button sm-small">
+				<img src="/static/other/sidemenu/svgs/upload.svg" width="15" height="15" loading="lazy" decoding="async">
+				<p>upload</p>
+			</div>
+		</a>
+
+		<div class="disappointment" style="display:none">
+			<img title='"i ate my goog cube dont tell anyone"
+	- @leon_jajko1 on twitter, 2025, to @ssoggycat'
+				class="sm-button" src="/static/ssoggycat/main/images/consume.webp" width="200" height="189" loading="lazy" decoding="async">
+		</div>
+	</div>
 
 	<button id="circlebtn" type="button" aria-label="Navigation"></button>
 	<span id="player" style="display: none"></span>
