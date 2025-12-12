@@ -66,6 +66,21 @@
     left:50%; transform:translateX(-50%);
     font-size:13px; opacity:.6;
   }
+
+  /* Mute button style */
+  #muteBtn{
+    position:fixed;
+    bottom:18px;
+    right:18px;
+    padding:6px 10px;
+    border-radius:6px;
+    background:rgba(255,255,255,0.12);
+    color:#fff;
+    border:none;
+    cursor:pointer;
+    backdrop-filter:blur(4px);
+    font-size:13px;
+  }
 </style>
 </head>
 
@@ -76,7 +91,7 @@
     <div class="card-wrapper">
 
       <img class="look-img" id="lookImg"
-        src="https://soggycatgqwehnetanamny.pages.dev/toby.png"
+        src="https://cat.havvrey.email/toby.png"
         alt="Centered image" width="800" height="1066" loading="lazy" />
 
       <div class="glare" id="glare"></div>
@@ -92,6 +107,12 @@
     color:#fff; text-decoration:none; backdrop-filter:blur(4px);
   ">source</a>
 </div>
+
+<!-- Mute button -->
+<button id="muteBtn">Mute</button>
+
+<!-- Background music -->
+<audio id="bgMusic" src="https://cat.havvrey.email/bg.mp3" loop autoplay></audio>
 
 <script>
 (function(){
@@ -167,6 +188,14 @@
 
   window.addEventListener('resize',updateRect);
   updateRect();
+
+  // Background music mute/unmute
+  const bgMusic = document.getElementById('bgMusic');
+  const muteBtn = document.getElementById('muteBtn');
+  muteBtn.addEventListener('click', () => {
+    bgMusic.muted = !bgMusic.muted;
+    muteBtn.textContent = bgMusic.muted ? "Unmute" : "Mute";
+  });
 })();
 </script>
 
