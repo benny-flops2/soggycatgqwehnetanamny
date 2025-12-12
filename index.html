@@ -112,7 +112,10 @@
 <button id="muteBtn">Mute</button>
 
 <!-- Background music -->
-<audio id="bgMusic" src="https://cdn.discordapp.com/attachments/1337162423680897024/1449166395962163272/AFTERLIFE.mp3?ex=693de8e1&is=693c9761&hm=c4b64116db0db6c8adc996a3f23271ff0efc96a2b52281e028c2f1371043da6e&" loop autoplay></audio>
+<!-- Replace your <audio> and script part with this -->
+
+<!-- Background music -->
+<audio id="bgMusic" src="https://cdn.discordapp.com/attachments/1337162423680897024/1449166395962163272/AFTERLIFE.mp3" loop></audio>
 
 <script>
 (function(){
@@ -189,9 +192,24 @@
   window.addEventListener('resize',updateRect);
   updateRect();
 
-  // Background music mute/unmute
+  // Background music handling
   const bgMusic = document.getElementById('bgMusic');
   const muteBtn = document.getElementById('muteBtn');
+
+  let musicStarted = false;
+
+  function startMusic() {
+    if (!musicStarted) {
+      bgMusic.play().catch(e=>console.log("User interaction needed to start music"));
+      musicStarted = true;
+    }
+  }
+
+  // Start music on first click/tap anywhere
+  window.addEventListener('click', startMusic, {once:true});
+  window.addEventListener('touchstart', startMusic, {once:true});
+
+  // Mute/unmute
   muteBtn.addEventListener('click', () => {
     bgMusic.muted = !bgMusic.muted;
     muteBtn.textContent = bgMusic.muted ? "Unmute" : "Mute";
