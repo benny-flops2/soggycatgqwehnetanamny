@@ -4,147 +4,94 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>toby</title>
+
 <style>
   :root{
     --bg:#0f1724;
     --card-bg:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-    --shadow: 0 10px 30px rgba(2,6,23,0.6);
+    --shadow:0 10px 30px rgba(2,6,23,0.6);
     --size-min:220px;
     --size-max:520px;
   }
 
-  /* Basic reset */
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
-  body{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:var(--bg);
-    color:#fff;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
+  html,body{
+    height:100%; margin:0; background:var(--bg);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; -webkit-font-smoothing:antialiased;
   }
 
-  /* Stage centers content and provides perspective for 3D transforms */
   .stage{
-    width:min(92vw, 1100px);
-    height:min(82vh, 800px);
-    display:grid;
-    place-items:center;
-    perspective:1100px; /* stronger perspective = deeper 3D */
-    -webkit-perspective:1100px;
-    user-select:none;
-    touch-action:none; /* keeps pointer move for some browsers */
+    width:min(92vw,1100px);
+    height:min(82vh,800px);
+    display:grid; place-items:center;
+    perspective:1100px;
+    user-select:none; touch-action:none;
   }
 
-  /* Card holds the image */
   .card{
-    width:clamp(var(--size-min), 45vw, var(--size-max));
-    aspect-ratio: 3 / 4; /* tall image */
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:var(--card-bg);
-    border-radius:18px;
+    width:clamp(var(--size-min),45vw,var(--size-max));
+    aspect-ratio:3/4;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--card-bg); border-radius:18px;
     box-shadow:var(--shadow);
-    transition: box-shadow 240ms ease;
-    transform-style:preserve-3d;
-    will-change:transform;
-    padding:14px;
+    transform-style:preserve-3d; padding:14px;
+    transition:box-shadow .24s ease;
   }
 
-  .card:active { transition: none; } /* remove transition while dragging */
-
-  /* The image itself - we apply transforms to this element */
   .look-img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    border-radius:12px;
-    transform-origin:50% 50% 0;
-    transition: transform 300ms cubic-bezier(.15,.9,.25,1), filter 300ms;
-    will-change:transform, filter;
-    box-shadow: 0 6px 20px rgba(2,6,23,0.45), inset 0 -6px 18px rgba(0,0,0,0.08);
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
-    cursor:default;
-    display:block;
+    width:100%; height:100%;
+    object-fit:cover; border-radius:12px;
+    transform-origin:center;
+    transition:transform .3s cubic-bezier(.15,.9,.25,1), filter .3s;
+    box-shadow:0 6px 20px rgba(2,6,23,0.45),
+               inset 0 -6px 18px rgba(0,0,0,0.08);
   }
 
-  /* subtle glare highlight */
   .glare{
-    position:absolute;
-    inset:0;
-    border-radius:12px;
-    pointer-events:none;
-    background: radial-gradient(600px 300px at 20% 20%, rgba(255,255,255,0.12), transparent 12%);
-    mix-blend-mode: screen;
-    opacity:0;
-    transition:opacity 300ms;
-    transform: translateZ(60px) scale(1.05);
-    will-change:opacity, transform;
+    position:absolute; inset:0; border-radius:12px;
+    pointer-events:none; opacity:0;
+    mix-blend-mode:screen;
+    background:radial-gradient(600px 300px at 20% 20%,
+      rgba(255,255,255,0.12), transparent 12%);
+    transition:opacity .3s;
+    transform:translateZ(60px) scale(1.05);
   }
 
-  /* Container positions the image and glare */
-  .card-wrapper{
-    position:relative;
-    width:100%;
-    height:100%;
-  }
+  .card-wrapper{position:relative; width:100%; height:100%}
 
-  /* fallback & small screens */
-  @media (max-width:480px){
-    :root{ --size-max:420px; --size-min:180px; }
-    .card{ border-radius:12px; padding:8px; }
-    .look-img{ border-radius:10px; }
-  }
-
-  /* Respect users who prefer reduced motion */
-  @media (prefers-reduced-motion: reduce){
-    .look-img, .glare { transition: none !important; }
-  }
-
-  /* helpful caption (optional) */
   .caption{
-    position:fixed;
-    bottom:18px;
-    left:50%;
-    transform:translateX(-50%);
-    color:rgba(255,255,255,0.6);
-    font-size:13px;
-    letter-spacing:0.2px;
-    user-select:none;
+    position:fixed; bottom:18px;
+    left:50%; transform:translateX(-50%);
+    font-size:13px; opacity:.6;
   }
 </style>
 </head>
+
 <body>
-  <div class="stage" id="stage">
-    <div class="card" id="card" aria-hidden="false">
-      <div class="card-wrapper">
-        <!-- Replace the src below with your own image path or URL -->
-        <img class="look-img" id="lookImg"
-             src="https://soggycatgqwehnetanamny.pages.dev/toby.png"
-             alt="Centered image" width="800" height="1066" loading="lazy" />
-        <div class="glare" id="glare"></div>
-      </div>
+
+<div class="stage" id="stage">
+  <div class="card" id="card">
+    <div class="card-wrapper">
+
+      <img class="look-img" id="lookImg"
+        src="https://soggycatgqwehnetanamny.pages.dev/toby.png"
+        alt="Centered image" width="800" height="1066" loading="lazy" />
+
+      <div class="glare" id="glare"></div>
     </div>
   </div>
-
-  <div class="caption">
-  toby the cat - made with chatgpt 
-  <a href="https://github.com/benny-flops2/soggycatgqwehnetanamny" target="_blank" style="
-    margin-left:8px;
-    padding:2px 6px;
-    border-radius:4px;
-    background:rgba(255,255,255,0.12);
-    color:#fff;
-    text-decoration:none;
-    backdrop-filter:blur(4px);
-  ">
-    source
-  </a>
 </div>
 
+<div class="caption">
+  toby the cat - made with chatgpt
+  <a href="https://github.com/benny-flops2/soggycatgqwehnetanamny" target="_blank" style="
+    margin-left:8px; padding:2px 6px;
+    border-radius:4px; background:rgba(255,255,255,.12);
+    color:#fff; text-decoration:none; backdrop-filter:blur(4px);
+  ">source</a>
+</div>
 
 <script>
 (function(){
@@ -153,149 +100,75 @@
   const img = document.getElementById('lookImg');
   const glare = document.getElementById('glare');
 
-  // Config — tweak these to increase/decrease effect
-  const cfg = {
-    maxTilt: 12,        // degrees of rotation on X/Y
-    maxTranslate: 12,   // px translation to make the image 'look' toward pointer
-    glareMaxOpacity: 0.35,
-    ease: 0.12,         // lerp smoothing (0..1); lower = smoother
-  };
+  const cfg = {maxTilt:12, maxTranslate:12, glareMaxOpacity:.35, ease:.12};
 
-  // State
-  let width = 0, height = 0, left = 0, top = 0;
-  let targetX = 0, targetY = 0;   // normalized [-1..1]
-  let currentX = 0, currentY = 0; // animated values
-  let rafId = null;
-  let pointerActive = false;
+  let width=0, height=0, left=0, top=0;
+  let targetX=0, targetY=0;
+  let currentX=0, currentY=0;
+  let rafId=null, pointerActive=false;
 
-  // Update geometry
   function updateRect(){
-    const r = card.getBoundingClientRect();
-    width = r.width; height = r.height; left = r.left; top = r.top;
-  }
-  // Convert pointer event to normalized coords relative to center
-  function pointerToNorm(clientX, clientY){
-    const x = ((clientX - left) - width/2) / (width/2);   // -1..1
-    const y = ((clientY - top)  - height/2) / (height/2); // -1..1
-    return [ Math.max(-1, Math.min(1, x)), Math.max(-1, Math.min(1, y)) ];
+    const r=card.getBoundingClientRect();
+    width=r.width; height=r.height; left=r.left; top=r.top;
   }
 
-  function onPointerMove(e){
-    if (e.touches && e.touches.length) {
-      e = e.touches[0];
-    }
-    const [nx, ny] = pointerToNorm(e.clientX, e.clientY);
-    // invert Y for intuitive tilt (pointer up -> rotateX negative)
-    targetX = ny;
-    targetY = nx;
-    pointerActive = true;
+  function pointerToNorm(x,y){
+    const nx=((x-left)-width/2)/(width/2);
+    const ny=((y-top)-height/2)/(height/2);
+    return [Math.max(-1,Math.min(1,nx)), Math.max(-1,Math.min(1,ny))];
+  }
+
+  function onMove(e){
+    if(e.touches) e=e.touches[0];
+    const[nx,ny]=pointerToNorm(e.clientX,e.clientY);
+    targetX=ny; targetY=nx; pointerActive=true;
     startRAF();
   }
 
-  function onPointerLeave(){
-    // reset targets
-    targetX = 0; targetY = 0;
-    pointerActive = false;
-  }
+  function onLeave(){ targetX=0; targetY=0; pointerActive=false; }
 
-  // Smooth step interpolation (lerp)
-  function lerp(a, b, t){ return a + (b - a) * t; }
+  const lerp=(a,b,t)=>a+(b-a)*t;
 
-  // Animation loop
   function animate(){
-    currentX = lerp(currentX, targetX, cfg.ease);
-    currentY = lerp(currentY, targetY, cfg.ease);
+    currentX=lerp(currentX,targetX,cfg.ease);
+    currentY=lerp(currentY,targetY,cfg.ease);
 
-    // compute rotation angles (rotateX is for vertical movement)
-    const rotateX = currentX * cfg.maxTilt * -1; // invert to match depth
-    const rotateY = currentY * cfg.maxTilt;
+    const rX=currentX*cfg.maxTilt*-1;
+    const rY=currentY*cfg.maxTilt;
+    const tX=currentY*cfg.maxTranslate*-1;
+    const tY=currentX*cfg.maxTranslate*-1;
 
-    // compute small translation so image "looks" towards the pointer
-    const transX = currentY * cfg.maxTranslate * -1;
-    const transY = currentX * cfg.maxTranslate * -1;
+    img.style.transform=`rotateX(${rX}deg) rotateY(${rY}deg) translate3d(${tX}px,${tY}px,28px) scale(1.01)`;
 
-    // apply transform: translateZ gives subtle pop
-    const transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translate3d(${transX}px, ${transY}px, 28px) scale(1.01)`;
-    img.style.transform = transform;
+    card.style.transform=`rotateX(${rX*.45}deg) rotateY(${rY*.45}deg)`;
 
-    // Card tilt (less than image to create layered parallax)
-    const cardRx = currentX * (cfg.maxTilt * 0.45) * -1;
-    const cardRy = currentY * (cfg.maxTilt * 0.45);
-    card.style.transform = `translateZ(0) rotateX(${cardRx}deg) rotateY(${cardRy}deg)`;
+    const gX=(currentY*50)+50;
+    const gY=(currentX*-35)+50;
+    glare.style.background=`radial-gradient(600px 300px at ${gX}% ${gY}%, rgba(255,255,255,.14), transparent 12%)`;
+    glare.style.opacity=lerp(parseFloat(glare.style.opacity||0), pointerActive?cfg.glareMaxOpacity*Math.abs(currentX):0, cfg.ease);
 
-    // Glare: move its position relative to pointer and fade in/out
-    const glareX = (currentY * 50) + 50; // percent
-    const glareY = (currentX * -35) + 50;
-    glare.style.background = `radial-gradient(600px 300px at ${glareX}% ${glareY}%, rgba(255,255,255,0.14), transparent 12%)`;
-    const targetGlareOpacity = pointerActive ? cfg.glareMaxOpacity * Math.abs(currentX) : 0;
-    glare.style.opacity = String(lerp(parseFloat(glare.style.opacity || 0), targetGlareOpacity, cfg.ease));
-
-    // stop RAF when values are basically at rest
-    if (Math.abs(currentX - targetX) < 0.0005 && Math.abs(currentY - targetY) < 0.0005 && !pointerActive) {
-      cancelAnimationFrame(rafId);
-      rafId = null;
-      return;
+    if(Math.abs(currentX-targetX)<0.0005 && Math.abs(currentY-targetY)<0.0005 && !pointerActive){
+      cancelAnimationFrame(rafId); rafId=null; return;
     }
-    rafId = requestAnimationFrame(animate);
+    rafId=requestAnimationFrame(animate);
   }
 
-  function startRAF(){
-    if (!rafId) { rafId = requestAnimationFrame(animate); }
-  }
+  const startRAF=()=>!rafId&&(rafId=requestAnimationFrame(animate));
 
-  // Event listeners
-  // Use pointer events when available, fallback to mouse/touch
-  const supportsPointer = window.PointerEvent !== undefined;
-  if (supportsPointer){
-    card.addEventListener('pointermove', onPointerMove, {passive:true});
-    card.addEventListener('pointerleave', onPointerLeave);
-    card.addEventListener('pointerdown', (e)=>{ e.preventDefault(); }, {passive:false});
+  if(window.PointerEvent){
+    card.addEventListener('pointermove',onMove,{passive:true});
+    card.addEventListener('pointerleave',onLeave);
   } else {
-    window.addEventListener('mousemove', onPointerMove, {passive:true});
-    card.addEventListener('mouseleave', onPointerLeave);
-    card.addEventListener('touchmove', onPointerMove, {passive:true});
-    card.addEventListener('touchend', onPointerLeave);
+    window.addEventListener('mousemove',onMove);
+    card.addEventListener('mouseleave',onLeave);
+    card.addEventListener('touchmove',onMove,{passive:true});
+    card.addEventListener('touchend',onLeave);
   }
 
-  // Recompute rect on resize/scroll
-  window.addEventListener('resize', updateRect);
-  window.addEventListener('scroll', updateRect, true);
-  // initial compute
+  window.addEventListener('resize',updateRect);
   updateRect();
-
-  // If device is touch-first, disable heavy 3D and only do small translate on touch
-  function isTouchy(){
-    return (('ontouchstart' in window) || navigator.maxTouchPoints > 0);
-  }
-  if (isTouchy()){
-    // make effect smaller & disable perspective to avoid jank
-    cfg.maxTilt = 6;
-    cfg.maxTranslate = 8;
-    stage.style.perspective = '800px';
-  }
-
-  // accessibility: if user prefers reduced motion, remove listeners & keep image static
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-    if (supportsPointer){
-      card.removeEventListener('pointermove', onPointerMove);
-      card.removeEventListener('pointerleave', onPointerLeave);
-    } else {
-      window.removeEventListener('mousemove', onPointerMove);
-      card.removeEventListener('mouseleave', onPointerLeave);
-      card.removeEventListener('touchmove', onPointerMove);
-      card.removeEventListener('touchend', onPointerLeave);
-    }
-    img.style.transform = 'none';
-    card.style.transform = 'none';
-    glare.style.display = 'none';
-  }
-
-  // allow pause/resume by clicking the card (optional nicety)
-  card.addEventListener('click', () => {
-    // quick pulse to indicate interactivity
-    card.animate([{boxShadow: '0 18px 40px rgba(2,6,23,0.75)'}, {boxShadow: 'var(--shadow)'}], {duration:260, easing:'ease-out'});
-  });
 })();
 </script>
+
 </body>
 </html>
